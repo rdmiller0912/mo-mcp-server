@@ -1,0 +1,227 @@
+// n8n tool registrations for mo-mcp-server
+
+import { z } from 'zod';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import * as n8n from '../services/n8n-client.js';
+import { MAX_RESPONSE_CHARS } from '../constants.js';
+
+function truncateResponse(text: string): string {
+  if (text.length <= MAX_RESPONSE_CHARS) return text;
+  return (
+    text.slice(0, MAX_RESPONSE_CHARS) +
+    '\n\n[Response truncated. Use filters or request specific workflow/execution IDs for smaller results.]'
+  );
+}
+
+export function registerN8nTools(server: McpServer): void {
+
+  // --- n8n_list_workflows ---
+  server.registerTool(
+    'n8n_list_workflows',
+    {
+      title: 'List n8n Workflows',
+      description:
+        'Lists all n8n workflows with their ID, name, active status, and last updated time.\n\n' +
+        'Returns: Array of workflow summaries.\n\n' +
+        'Use the workflow ID from results for n8n_get_workflow or n8n_list_executions.',
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async () => {
+      try {
+        const workflows = await n8n.listWorkflows();
+        const summary = workflows.map((w) => ({
+          id: w.id,
+          name: w.name,
+          active: w.active,
+          updatedAt: w.updatedAt,
+          tags: w.tags?.map((t) => t.name) || [],
+        }));
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({ total: summary.length, workflows: summary }, null, 2),
+          }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // --- n8n_get_workflow ---
+  server.registerTool(
+    'n8n_get_workflow',
+    {
+      title: 'Get n8n Workflow Details',
+      description:
+        'Retrieves the full definition of an n8n workflow, including all nodes and connections.\n\n' +
+        'Args:\n' +
+        '  - workflow_id (string): The n8n workflow ID (from n8n_list_workflows)\n\n' +
+        'Returns: Complete workflow definition with nodes, connections, and settings.',
+      inputSchema: {
+        workflow_id: z.string().min(1).describe('n8n workflow ID'),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async ({ workflow_id }) => {
+      try {
+        const workflow = await n8n.getWorkflow(workflow_id);
+        const text = truncateResponse(JSON.stringify(workflow, null, 2));
+        return { content: [{ type: 'text' as const, text }] };
+      } catch (err) {
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // --- n8n_list_executions ---
+  server.registerTool(
+    'n8n_list_executions',
+    {
+      title: 'List n8n Executions',
+      description:
+        'Lists recent workflow executions with their status, timing, and workflow ID.\n\n' +
+        'Args:\n' +
+        '  - workflow_id (string, optional): Filter executions to a specific workflow\n' +
+        '  - limit (number, optional): Max executions to return, default 20\n' +
+        '  - status (string, optional): Filter by status: "success", "error", "waiting"\n\n' +
+        'Returns: Array of execution summaries with status and timing.',
+      inputSchema: {
+        workflow_id: z.string().optional()
+          .describe('Filter to a specific workflow ID'),
+        limit: z.number().int().min(1).max(100).default(20)
+          .describe('Max executions to return'),
+        status: z.enum(['success', 'error', 'waiting']).optional()
+          .describe('Filter by execution status'),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async ({ workflow_id, limit, status }) => {
+      try {
+        const executions = await n8n.listExecutions(workflow_id, limit, status);
+        const summary = executions.map((e) => ({
+          id: e.id,
+          workflowId: e.workflowId,
+          status: e.status,
+          mode: e.mode,
+          startedAt: e.startedAt,
+          stoppedAt: e.stoppedAt,
+          finished: e.finished,
+        }));
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({ total: summary.length, executions: summary }, null, 2),
+          }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // --- n8n_get_execution ---
+  server.registerTool(
+    'n8n_get_execution',
+    {
+      title: 'Get n8n Execution Details',
+      description:
+        'Retrieves detailed information about a specific workflow execution, ' +
+        'including node-level results and error details.\n\n' +
+        'Args:\n' +
+        '  - execution_id (string): The execution ID (from n8n_list_executions)\n\n' +
+        'Returns: Full execution details including per-node results.',
+      inputSchema: {
+        execution_id: z.string().min(1).describe('n8n execution ID'),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async ({ execution_id }) => {
+      try {
+        const execution = await n8n.getExecution(execution_id);
+        const text = truncateResponse(JSON.stringify(execution, null, 2));
+        return { content: [{ type: 'text' as const, text }] };
+      } catch (err) {
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // --- n8n_trigger_workflow ---
+  server.registerTool(
+    'n8n_trigger_workflow',
+    {
+      title: 'Trigger n8n Workflow',
+      description:
+        'Triggers an n8n workflow via its webhook URL. The workflow must be active ' +
+        'and have a Webhook trigger node configured.\n\n' +
+        'Args:\n' +
+        '  - webhook_path (string): The webhook path segment (the part after /webhook/). ' +
+        'This is configured in the workflow\'s Webhook trigger node.\n' +
+        '  - payload (object, optional): JSON data to send to the workflow.\n\n' +
+        'Returns: The webhook response from n8n.\n\n' +
+        'Important: Only workflows with active Webhook trigger nodes can be triggered this way. ' +
+        'Check n8n_list_workflows to verify the workflow is active first.',
+      inputSchema: {
+        webhook_path: z.string().min(1)
+          .describe('Webhook path (the part after /webhook/ in the URL)'),
+        payload: z.record(z.unknown()).default({})
+          .describe('JSON payload to send to the workflow'),
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
+    },
+    async ({ webhook_path, payload }) => {
+      try {
+        const result = await n8n.triggerWebhook(webhook_path, payload);
+        return {
+          content: [{
+            type: 'text' as const,
+            text: `Workflow triggered successfully.\n${JSON.stringify(result, null, 2)}`,
+          }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+}
