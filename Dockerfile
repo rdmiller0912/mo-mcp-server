@@ -1,4 +1,3 @@
-# rebuild-v3
 FROM node:20-alpine
 
 WORKDIR /app
@@ -6,8 +5,7 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install
 
-COPY tsconfig.json ./
-COPY src/ ./src/
+COPY . .
 RUN npm run build
 
 RUN npm prune --production
