@@ -1,3 +1,4 @@
+# MO MCP Server v1.0.0
 services:
   mo-mcp-server:
     build: .
