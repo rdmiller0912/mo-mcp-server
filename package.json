@@ -1,6 +1,6 @@
 {
   "name": "mo-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Miller Operations MCP Server - NocoDB and n8n tools for Claude",
   "type": "module",
   "main": "dist/index.js",
