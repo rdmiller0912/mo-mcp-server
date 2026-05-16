@@ -8,6 +8,12 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+      - MCP_BEARER_TOKEN=ded0a8cb-ed12-4359-a1c4-0eb5971531dc-2ea887c1-1c53-4051-8fe2-7c0d5834574e
+      - NOCODB_BASE_URL=https://data.milleroperations.com
+      - NOCODB_API_TOKEN=ug4CJr0xQ96GoWzphMnUAp27t8XJkwCvSrCsnt7u
+      - NOCODB_BASE_ID=pmk2obnynr2qslb
+      - N8N_BASE_URL=https://flow.milleroperations.com
+      - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMWZkMGEyOS02YjZkLTQzMDctODg3OC0yN2MyY2M0M2EzNTIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY1NTU1MzY2fQ.XHY7o5fcn5orWROqAkOj9-et0I5cZy20hr2vpQGcaag
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
       interval: 30s
