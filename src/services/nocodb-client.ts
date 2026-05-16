@@ -82,8 +82,6 @@ async function apiRequest<T>(
   return res.json() as Promise<T>;
 }
 
-// --- Public API Methods ---
-
 export async function listTables(): Promise<NocoDBTable[]> {
   const { baseId } = getConfig();
   const data = await apiRequest<{ list: NocoDBTable[] }>(
@@ -122,4 +120,61 @@ export async function listRecords(
   return apiRequest<NocoDBListResponse>(path);
 }
 
-export async fun
+export async function searchRecords(
+  tableId: string,
+  searchField: string,
+  searchValue: string,
+  limit: number = 25
+): Promise<NocoDBListResponse> {
+  const params = new URLSearchParams({
+    where: `(${searchField},like,%${searchValue}%)`,
+    limit: String(limit),
+  });
+
+  return apiRequest<NocoDBListResponse>(
+    `/api/v2/tables/${tableId}/records?${params.toString()}`
+  );
+}
+
+export async function getRecord(
+  tableId: string,
+  recordId: string
+): Promise<NocoDBRecord> {
+  return apiRequest<NocoDBRecord>(
+    `/api/v2/tables/${tableId}/records/${recordId}`
+  );
+}
+
+export async function createRecord(
+  tableId: string,
+  data: NocoDBRecord
+): Promise<NocoDBRecord> {
+  return apiRequest<NocoDBRecord>(
+    `/api/v2/tables/${tableId}/records`,
+    'POST',
+    data
+  );
+}
+
+export async function updateRecord(
+  tableId: string,
+  recordId: string,
+  data: NocoDBRecord
+): Promise<NocoDBRecord> {
+  return apiRequest<NocoDBRecord>(
+    `/api/v2/tables/${tableId}/records`,
+    'PATCH',
+    { Id: recordId, ...data }
+  );
+}
+
+export async function bulkInsert(
+  tableId: string,
+  records: NocoDBRecord[]
+): Promise<unknown> {
+  return apiRequest<unknown>(
+    `/api/v2/tables/${tableId}/records`,
+    'POST',
+    records
+  );
+}
