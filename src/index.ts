@@ -40,12 +40,22 @@ const app = express();
 app.use(express.json());
 
 // Health check endpoint (no auth required)
+// Includes env_check to verify environment variables are loaded
 app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     server: SERVER_NAME,
     version: SERVER_VERSION,
     timestamp: new Date().toISOString(),
+    env_check: {
+      PORT: process.env.PORT || 'NOT SET',
+      MCP_BEARER_TOKEN: process.env.MCP_BEARER_TOKEN ? 'SET (' + process.env.MCP_BEARER_TOKEN.slice(0, 4) + '...)' : 'NOT SET',
+      NOCODB_BASE_URL: process.env.NOCODB_BASE_URL || 'NOT SET',
+      NOCODB_API_TOKEN: process.env.NOCODB_API_TOKEN ? 'SET (' + process.env.NOCODB_API_TOKEN.slice(0, 4) + '...)' : 'NOT SET',
+      NOCODB_BASE_ID: process.env.NOCODB_BASE_ID || 'NOT SET',
+      N8N_BASE_URL: process.env.N8N_BASE_URL || 'NOT SET',
+      N8N_API_KEY: process.env.N8N_API_KEY ? 'SET (' + process.env.N8N_API_KEY.slice(0, 4) + '...)' : 'NOT SET',
+    }
   });
 });
 
