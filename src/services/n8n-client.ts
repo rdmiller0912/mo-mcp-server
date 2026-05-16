@@ -1,5 +1,6 @@
 // n8n API client for mo-mcp-server
 // Wraps the n8n REST API with typed methods
+// DEBUG VERSION - includes console.log for troubleshooting
 
 import { ENV } from '../constants.js';
 import type { N8nWorkflow, N8nExecution, N8nWebhookResponse } from '../types.js';
@@ -17,36 +18,38 @@ function getConfig() {
   return { baseUrl: baseUrl.replace(/\/$/, ''), apiKey };
 }
 
-function headers(): Record<string, string> {
-  const { apiKey } = getConfig();
-  return {
-    'X-N8N-API-KEY': apiKey,
-    'Content-Type': 'application/json',
-  };
-}
-
 async function apiRequest<T>(
   path: string,
   method: string = 'GET',
   body?: unknown
 ): Promise<T> {
-  const { baseUrl } = getConfig();
+  const { baseUrl, apiKey } = getConfig();
   const url = `${baseUrl}${path}`;
 
   const opts: RequestInit = {
     method,
-    headers: headers(),
+    headers: {
+      'Content-Type': 'application/json',
+      'X-N8N-API-KEY': apiKey,
+    },
   };
 
   if (body !== undefined) {
     opts.body = JSON.stringify(body);
   }
 
+  console.log(`n8n API request: ${method} ${url}`);
+  console.log(`n8n API key present: ${apiKey ? 'yes (' + apiKey.slice(0, 8) + '...)' : 'no'}`);
+
   const res = await fetch(url, opts);
+
+  console.log(`n8n API response status: ${res.status}`);
 
   if (!res.ok) {
     const errorText = await res.text().catch(() => 'Unknown error');
     const status = res.status;
+
+    console.error(`n8n API error: ${status} - ${errorText}`);
 
     if (status === 404) {
       throw new Error(
@@ -69,7 +72,6 @@ async function apiRequest<T>(
     throw new Error(`n8n API error ${status}: ${errorText}`);
   }
 
-  // Some n8n endpoints return empty responses
   const text = await res.text();
   if (!text) return {} as T;
 
