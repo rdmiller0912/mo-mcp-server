@@ -3,8 +3,8 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install dependencies first (cached layer)
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json ./
+RUN npm install
 
 # Copy source and build
 COPY tsconfig.json ./
