@@ -1,7 +1,7 @@
 // Shared constants for mo-mcp-server
 
 export const SERVER_NAME = 'mo-mcp-server';
-export const SERVER_VERSION = '1.0.0';
+export const SERVER_VERSION = '1.0.2-debug';
 
 // Pagination defaults
 export const DEFAULT_PAGE_SIZE = 25;
