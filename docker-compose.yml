@@ -13,7 +13,7 @@ services:
       - NOCODB_API_TOKEN=ug4CJr0xQ96GoWzphMnUAp27t8XJkwCvSrCsnt7u
       - NOCODB_BASE_ID=pmk2obnynr2qslb
       - N8N_BASE_URL=https://flow.milleroperations.com
-      - N8N_API_KEY=eyJzdWIiOiIwZDNiZTMyMS00YmQxLTRlMWUtOTRkMC05ZWI3NzQwYmU2OGQiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiYjY5ODY0MTMtNWVhZi00M2ZlLWIwNDMtNWFhNTNhOGViYjgwIiwiaWF0IjoxNzc4OTYxNDEyfQ.qnnQtE-9aihl8cGC1C1ZnfV5H0IupwYk3ohZ_lazALc
+      - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwZDNiZTMyMS00YmQxLTRlMWUtOTRkMC05ZWI3NzQwYmU2OGQiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiYTg5ZTc1ZjEtYmJiMi00YTgzLTg2NzEtNmI2NTZlNzA4OTc0IiwiaWF0IjoxNzc4OTYzMDU1fQ.Du4Ef7ykQMd6fbw3koIyhrTjOgUwUKM1BjflRCgby_0
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
       interval: 30s
