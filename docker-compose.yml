@@ -1,4 +1,3 @@
-# MO MCP Server v1.0.0
 services:
   mo-mcp-server:
     build: .
@@ -6,15 +5,10 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3001"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
-      - PORT=3001
-      - MCP_BEARER_TOKEN=ded0a8cb-ed12-4359-a1c4-0eb5971531dc-2ea887c1-1c53-4051-8fe2-7c0d5834574e
-      - NOCODB_BASE_URL=https://data.milleroperations.com
-      - NOCODB_API_TOKEN=ug4CJr0xQ96GoWzphMnUAp27t8XJkwCvSrCsnt7u
-      - NOCODB_BASE_ID=pmk2obnynr2qslb
-      - N8N_BASE_URL=https://flow.milleroperations.com
-      - N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwZDNiZTMyMS00YmQxLTRlMWUtOTRkMC05ZWI3NzQwYmU2OGQiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiZWUxYzZlNmMtMGZjYi00MGI2LWFkYmItODFmZTA1OTRkM2QwIiwiaWF0IjoxNzc5Mzg4OTA0fQ.e41YJ1u81HOeZ4fcrsoNuZfHzpWzpDDBMNQ8GRhllcQ
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
       interval: 30s
